@@ -4,6 +4,6 @@ services:
     environment:
       - 'ACCEPT_EULA=yes'
       - 'MSSQL_PID=express'
-      - 'MSSQL_SA_PASSWORD=verYs3cret'
+      - 'MSSQL_SA_PASSWORD=Admin000'
     ports:
       - '1433'
