@@ -12,39 +12,40 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
-import ru.bozhov.decemberCloud.auth.service.DecemberUserDetailsService;
-
+import ru.bozhov.decemberCloud.common.impl.DecemberUserImpl;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
+
     @Bean
     public UserDetailsService userDetailsService() {
-        return new DecemberUserDetailsService();
+        return new DecemberUserImpl();
     }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests((authorize) ->
                         authorize
-                                .requestMatchers("/registration","/welcome")
-                                .permitAll()
-                                .anyRequest()
-                                .authenticated()
-                ).formLogin(
-                        form -> form
-                                .loginPage("/login")
-                                .loginProcessingUrl("/login")
-                                .defaultSuccessUrl("/lk", true)
-                                .permitAll()
-                ).logout(
-                        logout -> logout
-                                .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
-                                .permitAll()
-                );
+                                .requestMatchers("/registration", "/welcome", "/").permitAll()
+                                .requestMatchers("/api/file/upload").authenticated() // Защищаем эндпоинт
+                                .requestMatchers("/admin/*").hasRole("ADMIN")
+                                .anyRequest().authenticated()
+                )
+                .formLogin(form -> form
+                        .loginPage("/login")
+                        .loginProcessingUrl("/login")
+                        .defaultSuccessUrl("/account", true)
+                        .permitAll()
+                )
+                .logout(logout -> logout
+                        .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
+                        .permitAll()
+                );// Отключить CSRF для упрощения, но включите его в продакшн-режиме
         return http.build();
     }
+
     @Bean
     public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
@@ -57,5 +58,4 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(5);
     }
-
 }

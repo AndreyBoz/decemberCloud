@@ -7,15 +7,17 @@
   <title>Cloud - DecemberCloud</title>
   <!-- Bootstrap CSS -->
   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-  <style>
-    /* Customize CSS here if needed */
-  </style>
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <link rel="stylesheet" href="css/style-cloud.css">
 </head>
 
 <body>
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
   <div class="container">
-    <a class="navbar-brand" href="#">DecemberCloud App</a>
+    <a class="navbar-brand" href="#">
+      <i class="fas fa-cloud"></i> DecemberCloud App
+    </a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
             aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
@@ -23,14 +25,14 @@
 
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav ml-auto">
-        <li class="nav-item active">
-          <a class="nav-link" href="/lk">My Account</a>
+        <li class="nav-item">
+          <a class="nav-link" href="/account">My Account</a>
         </li>
         <li class="nav-item active">
           <a class="nav-link" href="/cloud">Cloud</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="/settings">Settings</a>
+          <a class="nav-link" href="account/settings">Settings</a>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="/logout">Logout</a>
@@ -44,22 +46,25 @@
 <div class="container mt-4">
   <div class="row">
     <div class="col-md-6 offset-md-3">
-      <div class="input-group">
-        <div class="custom-file">
-          <input type="file" class="custom-file-input" id="fileInput" onchange="updateFileName()">
-          <label class="custom-file-label" for="fileInput">Choose file</label>
+      <form id="uploadForm" enctype="multipart/form-data">
+        <div class="input-group mb-3">
+          <div class="custom-file">
+            <input type="file" class="custom-file-input" id="fileInput" name="file" onchange="updateFileName()">
+            <label class="custom-file-label" for="fileInput">Choose file</label>
+          </div>
+          <div class="input-group-append">
+            <button class="btn btn-primary" type="button" onclick="openFolderSelectModal()">Upload</button>
+          </div>
         </div>
-        <div class="input-group-append">
-          <button class="btn btn-primary" type="button">Upload</button>
-        </div>
-      </div>
+      </form>
+      <button class="btn btn-secondary" onclick="openNewFolderModal()">Add Folder</button>
     </div>
   </div>
 </div>
 
 <div class="container mt-5">
   <div class="row justify-content-center">
-    <div class="col-md-6">
+    <div class="col-md-8">
       <div class="card">
         <div class="card-body">
           <h5 class="card-title">Online Folder</h5>
@@ -67,11 +72,15 @@
           <ul>
             <!-- Iterate over folders -->
             <li th:each="folder : ${folders}">
-              <a th:href="@{'/folder/' + ${folder.id}}"><span th:text="${folder.name}"></span></a>
-            </li>
-            <!-- Iterate over files -->
-            <li th:each="file : ${files}">
-              <span th:text="${file.name}"></span>
+              <a th:href="@{'/folder/' + ${folder.id}}"><span th:text="${folder.folderName}"></span></a>
+              <ul>
+                <!-- Iterate over files in the folder -->
+                <li th:each="file : ${folder.decemberFiles}">
+                  <span th:text="${file.filename} + '.' + ${file.fileType}"></span>
+                  <button class="btn btn-sm btn-warning" th:data-file-id="${file.id}" onclick="openRenameFileModal(this)">Rename</button>
+                  <button class="btn btn-sm btn-danger" th:data-file-id="${file.id}" onclick="deleteFile(this)">Delete</button>
+                </li>
+              </ul>
             </li>
           </ul>
         </div>
@@ -80,20 +89,199 @@
   </div>
 </div>
 
+<!-- Folder Select Modal -->
+<div class="modal fade" id="folderSelectModal" tabindex="-1" aria-labelledby="folderSelectModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="folderSelectModalLabel">Select Folder</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <ul>
+          <!-- Iterate over folders to select upload destination -->
+          <li th:each="folder : ${folders}">
+            <a href="#" th:onclick="'selectFolder(' + ${folder.id} + ')'"><span th:text="${folder.folderName}"></span></a>
+          </li>
+        </ul>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- New Folder Modal -->
+<div class="modal fade" id="newFolderModal" tabindex="-1" aria-labelledby="newFolderModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="newFolderModalLabel">New Folder</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="newFolderForm">
+          <div class="form-group">
+            <label for="folderName">Folder Name</label>
+            <input type="text" class="form-control" id="folderName" name="folderName">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" onclick="createNewFolder()">Create</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Rename File Modal -->
+<div class="modal fade" id="renameFileModal" tabindex="-1" aria-labelledby="renameFileModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="renameFileModalLabel">Rename File</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="renameFileForm">
+          <div class="form-group">
+            <label for="newFileName">New File Name</label>
+            <input type="text" class="form-control" id="newFileName" name="newFileName">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" onclick="renameFile()">Rename</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Bootstrap JS and dependencies -->
-<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
 <script>
+  let selectedFolderId = null;
+  let renameFileId = null;
+
   function updateFileName() {
     var input = document.getElementById('fileInput');
     var fileName = input.files[0].name;
     var label = document.querySelector('.custom-file-label');
     label.innerHTML = fileName;
   }
+
+  function openFolderSelectModal() {
+    $('#folderSelectModal').modal('show');
+  }
+
+  function selectFolder(folderId) {
+    selectedFolderId = folderId;
+    $('#folderSelectModal').modal('hide');
+    uploadFile();
+  }
+
+  function uploadFile() {
+    if (!selectedFolderId) {
+      alert("Пожалуйста, сначала выберите папку.");
+      return;
+    }
+    var form = $('#uploadForm')[0];
+    var formData = new FormData(form);
+    formData.append("folderId", selectedFolderId);
+
+    $.ajax({
+      url: '/api/file/upload',
+      type: 'POST',
+      enctype: 'multipart/form-data',
+      data: formData,
+      processData: false,
+      contentType: false,
+      cache: false,
+      timeout: 600000,
+      success: function(response) {
+        alert("Файл успешно загружен!");
+        location.reload();
+      },
+      error: function(response) {
+        alert("Не удалось загрузить файл.");
+      }
+    });
+  }
+
+  function openNewFolderModal() {
+    $('#newFolderModal').modal('show');
+  }
+
+  function createNewFolder() {
+    var folderName = $('#folderName').val();
+    $.ajax({
+      url: '/api/file/createFolder',
+      type: 'POST',
+      contentType: 'application/json',
+      data: JSON.stringify({ folderName: folderName }),
+      success: function(response) {
+        alert("Папка успешно создана!");
+        location.reload();
+      },
+      error: function(response) {
+        alert("Не удалось создать папку.");
+      }
+    });
+  }
+
+  function openRenameFileModal(button) {
+    renameFileId = $(button).data('file-id');
+    $('#renameFileModal').modal('show');
+  }
+
+  function renameFile() {
+    var newFileName = $('#newFileName').val();
+    $.ajax({
+      url: '/api/file/rename',
+      type: 'POST',
+      contentType: 'application/json',
+      data: JSON.stringify({ fileId: renameFileId, newFileName: newFileName }),
+      success: function(response) {
+        alert("Файл успешно переименован!");
+        location.reload();
+      },
+      error: function(response) {
+        alert("Не удалось переименовать файл.");
+      }
+    });
+  }
+
+  function deleteFile(button) {
+    var fileId = $(button).data('file-id');
+    if (confirm("Вы уверены, что хотите удалить этот файл?")) {
+      $.ajax({
+        url: '/api/file/delete',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({ fileId: fileId }),
+        success: function(response) {
+          alert("Файл успешно удален!");
+          location.reload();
+        },
+        error: function(response) {
+          alert("Не удалось удалить файл.");
+        }
+      });
+    }
+  }
 </script>
 
 </body>
-
 </html>

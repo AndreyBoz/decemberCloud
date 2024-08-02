@@ -1,33 +1,13 @@
 package ru.bozhov.decemberCloud.auth.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
-
-import java.util.Set;
+import ru.bozhov.decemberCloud.common.pojo._DecemberUser;
 
 @Entity
 @Table(name = "users")
 @Data
-@Setter
-@Getter
-public class DecemberUser {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    @Column(name = "username", unique = true)
-    private String username;
-    @Column(name = "password")
-    private String password;
-    @Column(name = "email", unique = true)
-    private String email;
-    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinTable(name = "users_roles",
-            joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"),
-            inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id")
-    )
-    private Set<Role> roles;
+public class DecemberUser extends _DecemberUser {
 
 }

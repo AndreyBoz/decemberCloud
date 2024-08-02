@@ -9,11 +9,12 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import ru.bozhov.decemberCloud.auth.model.DecemberUser;
-import ru.bozhov.decemberCloud.auth.repository.UserRepository;
+import ru.bozhov.decemberCloud.common.repository.UserRepository;
 
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@Deprecated
 @Service
 public class DecemberUserDetailsService implements UserDetailsService {
     @Autowired

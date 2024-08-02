@@ -13,6 +13,7 @@
       <label for="username">Введите имя пользователя: </label>
       <input type="text" th:field="*{username}" class="form-control" id="username"/>
       <div style="color:red" th:if="${#fields.hasErrors('username')}" th:errors="*{username}">Username Error</div>
+      <div style="color:red" th:if="${usernameError}" th:text="${usernameError}"></div>
     </div>
     <div class="form-group">
       <label for="password">Введите пароль: </label>
@@ -23,6 +24,7 @@
       <label for="email">Введите email: </label>
       <input type="email" th:field="*{email}" class="form-control" id="email"/>
       <div style="color:red" th:if="${#fields.hasErrors('email')}" th:errors="*{email}">Email Error</div>
+      <div style="color:red" th:if="${emailError}" th:text="${emailError}"></div>
     </div>
     <button type="submit" class="btn btn-primary">Sign up!</button>
   </form>

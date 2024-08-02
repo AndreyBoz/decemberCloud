@@ -1,11 +1,13 @@
 package ru.bozhov.decemberCloud.cloud.service;
 
-import lombok.AllArgsConstructor;
-import org.springframework.stereotype.Service;
-import ru.bozhov.decemberCloud.cloud.repository.DecemberFileRepository;
+import ru.bozhov.decemberCloud.cloud.model.DecemberFile;
+import ru.bozhov.decemberCloud.cloud.model.Folder;
 
-@Service
-@AllArgsConstructor
-public class DecemberFileService {
-    DecemberFileRepository decemberFileRepository;
+
+public interface DecemberFileService {
+    public void saveFile(DecemberFile file, Folder folder);
+
+    void renameFile(Long fileId, String newFileName);
+
+    void deleteFile(Long fileId);
 }

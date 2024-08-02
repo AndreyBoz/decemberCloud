@@ -5,4 +5,5 @@ import org.springframework.stereotype.Repository;
 import ru.bozhov.decemberCloud.cloud.model.DecemberFile;
 @Repository
 public interface DecemberFileRepository extends JpaRepository<DecemberFile,Long> {
+    DecemberFile findDecemberFileById(Long id);
 }
